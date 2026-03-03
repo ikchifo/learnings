@@ -1,0 +1,31 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b',
+  'secondaryColor': '#0ea5e9',
+  'tertiaryColor': '#22c55e'
+}}}%%
+flowchart TD
+    A["Your Python code<br/>model(input)"]:::python
+    B["torch.compile()"]:::compile
+    C["TorchDynamo<br/>(Python bytecode tracer)"]:::dynamo
+    D["FX Graph<br/>(Intermediate Representation)"]:::fx
+    E["TorchInductor<br/>(Compiler backend)"]:::inductor
+    F["Post-Grad Passes<br/>(Graph optimizations)"]:::passes
+    G["Triton / CUDA kernels<br/>(GPU machine code)"]:::gpu
+
+    A -->|"Wraps model"| B
+    B -->|"Traces execution"| C
+    C -->|"Captures ops as nodes"| D
+    D -->|"Lowers to backend"| E
+    E -->|"Runs optimization passes"| F
+    F -->|"Generates GPU code"| G
+
+    classDef python fill:#3b82f6,color:#fff,stroke:#2563eb,stroke-width:2px
+    classDef compile fill:#8b5cf6,color:#fff,stroke:#7c3aed,stroke-width:2px
+    classDef dynamo fill:#ec4899,color:#fff,stroke:#db2777,stroke-width:2px
+    classDef fx fill:#f59e0b,color:#000,stroke:#d97706,stroke-width:2px
+    classDef inductor fill:#14b8a6,color:#fff,stroke:#0d9488,stroke-width:2px
+    classDef passes fill:#ef4444,color:#fff,stroke:#dc2626,stroke-width:2px
+    classDef gpu fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:2px

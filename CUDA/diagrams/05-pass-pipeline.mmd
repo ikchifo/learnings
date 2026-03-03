@@ -1,0 +1,40 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart LR
+    subgraph input["Input"]
+        G["Raw FX Graph<br/>from Inductor"]:::fx
+    end
+
+    subgraph passes["PostGradPassManager passes"]
+        direction LR
+        P1["NoOpElimination<br/>(remove redundant<br/>reshapes/slices)"]:::utility
+        P2["SplitCoalescing<br/>(merge duplicate<br/>split nodes)"]:::utility
+        P3["QKNormRoPEFusion<br/>(pattern match and<br/>replace with fused op)"]:::fusion
+        P4["PostCleanup"]:::cleanup
+        P5["FixFunctionalization"]:::cleanup
+    end
+
+    subgraph output["Output"]
+        O["Optimized FX Graph<br/>with fused kernels"]:::optimized
+    end
+
+    G --> P1
+    P1 --> P2
+    P2 --> P3
+    P3 --> P4
+    P4 --> P5
+    P5 --> O
+
+    classDef fx fill:#f59e0b,color:#000,stroke:#d97706,stroke-width:2px
+    classDef utility fill:#0ea5e9,color:#fff,stroke:#0284c7,stroke-width:2px
+    classDef fusion fill:#ef4444,color:#fff,stroke:#dc2626,stroke-width:2px
+    classDef cleanup fill:#6b7280,color:#fff,stroke:#4b5563,stroke-width:2px
+    classDef optimized fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:2px
+
+    style input fill:#fffbeb,stroke:#fde68a,stroke-width:1px,color:#000
+    style passes fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px,color:#000
+    style output fill:#f0fdf4,stroke:#bbf7d0,stroke-width:1px,color:#000

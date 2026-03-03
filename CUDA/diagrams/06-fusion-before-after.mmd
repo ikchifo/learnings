@@ -1,0 +1,43 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    subgraph unfused["BEFORE fusion: 5 separate GPU kernel launches"]
+        direction TB
+        qkv_u["qkv"]:::input
+        split_u["split_with_sizes"]:::op
+        rms_q["rms_norm (q)"]:::kernel
+        rms_k["rms_norm (k)"]:::kernel
+        rope_u["rotary_embedding"]:::kernel
+        out_u["q, k, v"]:::output
+
+        qkv_u --> split_u
+        split_u -->|"q"| rms_q
+        split_u -->|"k"| rms_k
+        rms_q --> rope_u
+        rms_k --> rope_u
+        split_u -->|"v (passthrough)"| out_u
+        rope_u --> out_u
+    end
+
+    subgraph fused["AFTER fusion: 1 fused GPU kernel launch"]
+        direction TB
+        qkv_f["qkv"]:::input
+        fused_op["fused_qk_norm_rope<br/>(split + norm_q + norm_k +<br/>RoPE in one kernel)"]:::fusedkernel
+        out_f["q, k, v"]:::output
+
+        qkv_f --> fused_op
+        fused_op --> out_f
+    end
+
+    classDef input fill:#3b82f6,color:#fff,stroke:#2563eb,stroke-width:2px
+    classDef op fill:#475569,color:#fff,stroke:#334155,stroke-width:1px
+    classDef kernel fill:#8b5cf6,color:#fff,stroke:#7c3aed,stroke-width:2px
+    classDef fusedkernel fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:3px
+    classDef output fill:#f59e0b,color:#000,stroke:#d97706,stroke-width:2px
+
+    style unfused fill:#fef2f2,stroke:#fecaca,stroke-width:2px,color:#000
+    style fused fill:#f0fdf4,stroke:#bbf7d0,stroke-width:2px,color:#000

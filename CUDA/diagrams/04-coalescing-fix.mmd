@@ -1,0 +1,50 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    subgraph before["BEFORE: SplitCoalescingPass"]
+        direction TB
+        qkv_b["qkv"]:::input
+        s1["split #1"]:::splitbad
+        s2["split #2"]:::splitbad
+        s3["split #3"]:::splitbad
+
+        g0b["getitem(0)"]:::getitem
+        g1b["getitem(1)"]:::getitem
+        g2b["getitem(2)"]:::getitem
+
+        qkv_b --> s1
+        qkv_b --> s2
+        qkv_b --> s3
+        s1 --> g0b
+        s2 --> g1b
+        s3 --> g2b
+    end
+
+    subgraph after["AFTER: SplitCoalescingPass"]
+        direction TB
+        qkv_a["qkv"]:::input
+        sc["split (canonical)"]:::splitgood
+
+        g0a["getitem(0)"]:::getitem
+        g1a["getitem(1)"]:::getitem
+        g2a["getitem(2)"]:::getitem
+
+        qkv_a --> sc
+        sc --> g0a
+        sc --> g1a
+        sc --> g2a
+    end
+
+    before -->|"Pass runs"| after
+
+    classDef input fill:#3b82f6,color:#fff,stroke:#2563eb,stroke-width:2px
+    classDef splitbad fill:#ef4444,color:#fff,stroke:#dc2626,stroke-width:3px
+    classDef splitgood fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:3px
+    classDef getitem fill:#fbbf24,color:#000,stroke:#d97706,stroke-width:1px
+
+    style before fill:#fef2f2,stroke:#fecaca,stroke-width:2px,color:#000
+    style after fill:#f0fdf4,stroke:#bbf7d0,stroke-width:2px,color:#000

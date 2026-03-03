@@ -1,0 +1,63 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    qkv["qkv tensor<br/>[T, q_size + 2*kv_size]"]:::input
+
+    split1["split_with_sizes #1<br/>[q_size, kv_size, kv_size]"]:::splitbad
+    split2["split_with_sizes #2<br/>[q_size, kv_size, kv_size]"]:::splitbad
+    split3["split_with_sizes #3<br/>[q_size, kv_size, kv_size]"]:::splitbad
+
+    get0["getitem(0)<br/>q"]:::getitem
+    get1["getitem(1)<br/>k"]:::getitem
+    get2["getitem(2)<br/>v"]:::getitem
+
+    q_reshape["reshape"]:::op
+    k_reshape["reshape"]:::op
+
+    q_norm["rms_norm"]:::norm
+    k_norm["rms_norm"]:::norm
+
+    q_flat["reshape back"]:::op
+    k_flat["reshape back"]:::op
+
+    rope["rotary_embedding"]:::rope
+
+    q_out["q output"]:::output
+    k_out["k output"]:::output
+    v_out["v output"]:::output
+
+    qkv --> split1
+    qkv --> split2
+    qkv --> split3
+
+    split1 --> get0
+    split2 --> get1
+    split3 --> get2
+
+    get0 --> q_reshape
+    get1 --> k_reshape
+    get2 --> v_out
+
+    q_reshape --> q_norm
+    k_reshape --> k_norm
+
+    q_norm --> q_flat
+    k_norm --> k_flat
+
+    q_flat --> rope
+    k_flat --> rope
+
+    rope --> q_out
+    rope --> k_out
+
+    classDef input fill:#3b82f6,color:#fff,stroke:#2563eb,stroke-width:2px
+    classDef splitbad fill:#ef4444,color:#fff,stroke:#dc2626,stroke-width:3px
+    classDef getitem fill:#fbbf24,color:#000,stroke:#d97706,stroke-width:1px
+    classDef op fill:#475569,color:#fff,stroke:#334155,stroke-width:1px
+    classDef norm fill:#8b5cf6,color:#fff,stroke:#7c3aed,stroke-width:2px
+    classDef rope fill:#ec4899,color:#fff,stroke:#db2777,stroke-width:2px
+    classDef output fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:2px

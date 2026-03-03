@@ -1,0 +1,37 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    subgraph before_cse["Before CSE"]
+        direction TB
+        x1["x"]:::input
+        a1["a = x * 2"]:::op
+        b1["b = x * 2"]:::op
+        c1["c = a + b"]:::op
+
+        x1 --> a1
+        x1 --> b1
+        a1 --> c1
+        b1 --> c1
+    end
+
+    subgraph after_cse["After CSE"]
+        direction TB
+        x2["x"]:::input
+        a2["a = x * 2"]:::op
+        c2["c = a + a"]:::op
+
+        x2 --> a2
+        a2 --> c2
+    end
+
+    before_cse -->|"CSE identifies\na and b are identical"| after_cse
+
+    classDef input fill:#3b82f6,color:#fff,stroke:#2563eb,stroke-width:2px
+    classDef op fill:#475569,color:#fff,stroke:#334155,stroke-width:2px
+
+    style before_cse fill:#fef2f2,stroke:#fecaca,stroke-width:2px,color:#000
+    style after_cse fill:#f0fdf4,stroke:#bbf7d0,stroke-width:2px,color:#000

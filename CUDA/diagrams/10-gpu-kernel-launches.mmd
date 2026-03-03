@@ -1,0 +1,35 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+sequenceDiagram
+    participant CPU as CPU (Host)
+    participant GPU as GPU (Device)
+    participant MEM as GPU Memory (HBM)
+
+    Note over CPU,MEM: WITHOUT fusion: many small kernels
+
+    CPU->>GPU: Launch kernel: split_with_sizes
+    GPU->>MEM: Read qkv from HBM
+    GPU->>MEM: Write q, k, v to HBM
+
+    CPU->>GPU: Launch kernel: rms_norm (q)
+    GPU->>MEM: Read q from HBM
+    GPU->>MEM: Write q_normed to HBM
+
+    CPU->>GPU: Launch kernel: rms_norm (k)
+    GPU->>MEM: Read k from HBM
+    GPU->>MEM: Write k_normed to HBM
+
+    CPU->>GPU: Launch kernel: rotary_embedding
+    GPU->>MEM: Read q_normed, k_normed from HBM
+    GPU->>MEM: Write q_rope, k_rope to HBM
+
+    Note over CPU,MEM: WITH fusion: one big kernel
+
+    CPU->>GPU: Launch kernel: fused_qk_norm_rope
+    GPU->>MEM: Read qkv, weights, cos_sin from HBM
+    GPU->>MEM: Write q_rope, k_rope, v to HBM
+    Note over GPU,MEM: All intermediate data stays in<br/>registers/shared memory (fast!)

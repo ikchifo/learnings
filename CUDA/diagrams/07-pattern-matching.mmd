@@ -1,0 +1,50 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    subgraph pattern["Pattern template (what the matcher looks for)"]
+        direction TB
+        p_split["split_with_sizes<br/>users: getitem(0), getitem(1), getitem(2)"]:::pattern
+        p_q["q path: reshape -> rms_norm -> reshape"]:::pattern
+        p_k["k path: reshape -> rms_norm -> reshape"]:::pattern
+        p_rope["rotary_embedding(q, k)"]:::pattern
+
+        p_split --> p_q
+        p_split --> p_k
+        p_q --> p_rope
+        p_k --> p_rope
+    end
+
+    subgraph graph_ok["Graph A: matches"]
+        direction TB
+        g1_split["split (1 node, 3 users)"]:::match
+        g1_rest["q/k/v paths..."]:::match
+
+        g1_split --> g1_rest
+    end
+
+    subgraph graph_bad["Graph B: does NOT match"]
+        direction TB
+        g2_s1["split #1 (1 user)"]:::nomatch
+        g2_s2["split #2 (1 user)"]:::nomatch
+        g2_s3["split #3 (1 user)"]:::nomatch
+        g2_rest["q/k/v paths..."]:::nomatch
+
+        g2_s1 --> g2_rest
+        g2_s2 --> g2_rest
+        g2_s3 --> g2_rest
+    end
+
+    pattern -.->|"Structural match"| graph_ok
+    pattern -.->|"No match: different<br/>structure at root"| graph_bad
+
+    classDef pattern fill:#0ea5e9,color:#fff,stroke:#0284c7,stroke-width:2px
+    classDef match fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:2px
+    classDef nomatch fill:#ef4444,color:#fff,stroke:#dc2626,stroke-width:2px
+
+    style pattern fill:#f0f9ff,stroke:#bae6fd,stroke-width:2px,color:#000
+    style graph_ok fill:#f0fdf4,stroke:#bbf7d0,stroke-width:2px,color:#000
+    style graph_bad fill:#fef2f2,stroke:#fecaca,stroke-width:2px,color:#000

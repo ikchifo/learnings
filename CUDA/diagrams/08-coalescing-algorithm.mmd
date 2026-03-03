@@ -1,0 +1,43 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor': '#1e293b',
+  'primaryTextColor': '#f8fafc',
+  'primaryBorderColor': '#475569',
+  'lineColor': '#64748b'
+}}}%%
+flowchart TD
+    START(["Start: iterate graph nodes"]):::start
+
+    CHECK_SPLIT{"Is node a<br/>split_with_sizes?"}:::decision
+    CHECK_USERS{"All users are<br/>getitem nodes?"}:::decision
+
+    EXTRACT["Extract:<br/>arg_node = input tensor<br/>split_sizes = size list"]:::action
+
+    SEEN{"Have we seen<br/>arg_node before?"}:::decision
+    FIRST["First time:<br/>split_nodes[arg_node] = [node]"]:::action
+
+    FIND_MATCH{"Any existing node<br/>for same arg_node<br/>has same split_sizes?"}:::decision
+
+    REPLACE["Duplicate found:<br/>node.replace_all_uses_with(canonical)<br/>graph.erase_node(node)<br/>count += 1"]:::replace
+
+    APPEND["Different sizes:<br/>split_nodes[arg_node].append(node)"]:::action
+
+    NEXT["Next node"]:::start
+
+    START --> CHECK_SPLIT
+    CHECK_SPLIT -->|"No"| NEXT
+    CHECK_SPLIT -->|"Yes"| CHECK_USERS
+    CHECK_USERS -->|"No"| NEXT
+    CHECK_USERS -->|"Yes"| EXTRACT
+    EXTRACT --> SEEN
+    SEEN -->|"No"| FIRST
+    SEEN -->|"Yes"| FIND_MATCH
+    FIRST --> NEXT
+    FIND_MATCH -->|"Yes: canonical found"| REPLACE
+    FIND_MATCH -->|"No: new split sizes"| APPEND
+    REPLACE --> NEXT
+    APPEND --> NEXT
+
+    classDef start fill:#6b7280,color:#fff,stroke:#4b5563,stroke-width:2px
+    classDef decision fill:#f59e0b,color:#000,stroke:#d97706,stroke-width:2px
+    classDef action fill:#0ea5e9,color:#fff,stroke:#0284c7,stroke-width:2px
+    classDef replace fill:#22c55e,color:#fff,stroke:#16a34a,stroke-width:3px
